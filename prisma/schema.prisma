@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CANCELLED
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  @@map("users")
+}
+
+model Professional {
+  id           Int           @id @default(autoincrement())
+  name         String
+  appointments Appointment[]
+  @@map("professionals")
+}
+
+model Appointment {
+  id             Int               @id @default(autoincrement())
+  professionalId Int               @map("professional_id")
+  title          String
+  patientName    String            @map("patient_name")
+  startAt        DateTime          @map("start_at") @db.Timestamptz(3)
+  endAt          DateTime          @map("end_at") @db.Timestamptz(3)
+  status         AppointmentStatus @default(SCHEDULED)
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+  professional   Professional      @relation(fields: [professionalId], references: [id])
+
+  @@index([professionalId, startAt])
+  @@map("appointments")
+}
