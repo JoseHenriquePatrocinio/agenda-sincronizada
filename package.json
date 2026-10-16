@@ -1,0 +1,33 @@
+{
+  "name": "agenda-sincronizada",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JoseHenriquePatrocinio/agenda-sincronizada.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/JoseHenriquePatrocinio/agenda-sincronizada/issues"
+  },
+  "homepage": "https://github.com/JoseHenriquePatrocinio/agenda-sincronizada#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "prisma": "^8.0.0-rc.23"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.10.1",
+    "bcrypt": "^6.0.0",
+    "connect-pg-simple": "^10.0.0",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+    "express-session": "^1.19.0",
+    "pg": "^8.23.1",
+    "socket.io": "^4.8.4"
+  }
+}
