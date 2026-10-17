@@ -47,7 +47,7 @@ function createAuthRouter(prisma) {
         return next(error);
       }
   
-      res.clearCookie("connect.sid");
+      res.clearCookie("agenda.sid");
       res.sendStatus(204);
     });
   });
