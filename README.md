@@ -21,10 +21,10 @@ Teste técnico - agenda clínica com atualização em tempo real.
    cp .env.example .env
    ```
 
-3. Inicie o PostgreSQL:
+3. Inicie o PostgreSQL/Redis:
 
    ```bash
-   docker compose up -d postgres
+   docker compose up -d
    ```
 
 4. Gere o cliente e crie as tabelas:
