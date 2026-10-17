@@ -41,6 +41,17 @@ function createAuthRouter(prisma) {
     }
   });
 
+  router.post("/logout", (req, res, next) => {
+    req.session.destroy((error) => {
+      if (error) {
+        return next(error);
+      }
+  
+      res.clearCookie("connect.sid");
+      res.sendStatus(204);
+    });
+  });
+
   return router;
 }
 
