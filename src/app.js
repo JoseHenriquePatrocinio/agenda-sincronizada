@@ -1,15 +1,48 @@
 const path = require("node:path");
 const express = require("express");
+const session = require("express-session");
+const { RedisStore } = require("connect-redis");
+const { PrismaClient } = require("@prisma/client");
+const { PrismaPg } = require("@prisma/adapter-pg");
+const { createAuthRouter } = require("./routes/auth");
+const { requireAuth } = require("./middleware/auth");
 
-function createApp() {
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL
+});
+
+const prisma = new PrismaClient({ adapter });
+
+function createApp(redisClient) {
   const app = express();
+
+  const sessionStore = new RedisStore({
+    client: redisClient,
+    prefix: "agenda:sess:",
+    ttl: 8 * 60 * 60
+  });
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 
+  app.use(session({
+    name: "agenda.sid",
+    store: sessionStore,
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 8 * 60 * 60 * 1000
+    }
+  }));
+
+  app.use("/api/auth", createAuthRouter(prisma));
   app.use(express.static(path.join(__dirname, "..", "public")));
 
-  app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
+  app.get("/api/health", requireAuth, (_req, res) => res.json({ status: "ok" }));
 
   return app;
 }
