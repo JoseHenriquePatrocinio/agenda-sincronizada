@@ -40,9 +40,16 @@ function createApp(redisClient) {
   }));
 
   app.use("/api/auth", createAuthRouter(prisma));
-  app.use(express.static(path.join(__dirname, "..", "public")));
 
   app.get("/api/health", requireAuth, (_req, res) => res.json({ status: "ok" }));
+  
+  app.get("/agenda.html", requireAuth, (req, res) => {
+    res.sendFile(
+      path.join(__dirname, "..", "public", "agenda.html")
+    );
+  });
+
+  app.use(express.static(path.join(__dirname, "..", "public")));
 
   return app;
 }
