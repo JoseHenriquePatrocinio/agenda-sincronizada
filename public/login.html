@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/login.css">
+  <script src="/js/login.js" defer></script>
+</head>
+<body>
+  <main class="container login-container">
+    <section class="card login-card">
+      <p class="eyebrow">agenda-sincronizada</p>
+      <h1>Entrar</h1>
+      <p class="muted">Acesse sua conta para gerenciar a agenda.</p>
+
+      <form id="loginForm">
+        <label for="username">Usuário</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          autocomplete="username"
+          required
+        >
+
+        <label for="password">Senha</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          required
+        >
+
+        <button type="submit" id="loginButton">Entrar</button>
+
+        <p id="message" class="muted" role="alert"></p>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agenda da clínica</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <div>
+        <p class="eyebrow">agenda-sincronizada</p>
+        <h1>Agenda da clínica</h1>
+        <p class="muted">Gerencie os agendamentos da clínica.</p>
+      </div>
+
+      <div class="toolbar">
+        <button type="button" id="logoutButton" class="secondary">
+          Sair
+        </button>
+      </div>
+    </header>
+
+    <section class="toolbar card">
+      <label for="date">
+        Data
+        <input id="date" type="date">
+      </label>
+    </section>
+
+    <section class="card">
+      <div class="section-heading">
+        <h2>Agendamentos</h2>
+        <button id="newButton" type="button" class="secondary">
+          Novo agendamento
+        </button>
+      </div>
+
+      <p id="message" class="muted">
+        Carregue a agenda para começar.
+      </p>
+
+      <div id="appointments" class="appointments"></div>
+    </section>
+  </main>
+  <script src="/js/agenda-auth.js"></script>
+</body>
+</html>
