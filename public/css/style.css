@@ -198,6 +198,38 @@ dialog form {
   margin-top: 8px;
 }
 
+select {
+  min-width: 0;
+  padding: 10px 12px;
+
+  font: inherit;
+  color: inherit;
+  background: #ffffff;
+
+  border: 1px solid #cfd7e4;
+  border-radius: 9px;
+}
+
+.appointment > div:last-child {
+  text-align: right;
+}
+
+.appointment > div:last-child p {
+  margin-top: 5px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.appointment.cancelled > div:last-child p {
+  color: #b42318;
+}
+
+@media (max-width: 600px) {
+  .appointment > div:last-child {
+    text-align: left;
+  }
+}
+
 @media (max-width: 600px) {
   header,
   .section-heading {
