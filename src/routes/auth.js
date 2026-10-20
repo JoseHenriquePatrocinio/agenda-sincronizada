@@ -1,35 +1,31 @@
 const express = require("express");
-const bcrypt = require("bcrypt");
+const { createAuthService } = require("../services/auth-service");
 
 function createAuthRouter(prisma) {
   const router = express.Router();
+  const authService = createAuthService(prisma);
 
   router.post("/login", async (req, res, next) => {
     try {
       const { username, password } = req.body || {};
+
       if (!username || !password) {
-        return res.status(400).json({ error: "Informe usuário e senha" });
+        return res.status(400).json({
+          error: "Informe usuário e senha",
+        });
       }
 
-      const user = await prisma.user.findUnique({ where: { username } });
-      if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-        return res.status(401).json({ error: "Credenciais inválidas" });
-      }
-
-      if (!user.isActive) {
-        return res.status(403).json({error: "Esta conta está desativada.",});
-      }
+      const user = await authService.authenticate(
+        username,
+        password
+      );
 
       req.session.regenerate((error) => {
         if (error) {
           return next(error);
         }
 
-        req.session.user = {
-          id: user.id,
-          username: user.username,
-          role: user.role,
-        };
+        req.session.user = user;
 
         req.session.save((error) => {
           if (error) {
@@ -42,6 +38,12 @@ function createAuthRouter(prisma) {
         });
       });
     } catch (error) {
+      if (error.status) {
+        return res.status(error.status).json({
+          error: error.message,
+        });
+      }
+
       next(error);
     }
   });
@@ -51,7 +53,7 @@ function createAuthRouter(prisma) {
       if (error) {
         return next(error);
       }
-  
+
       res.clearCookie("agenda.sid");
       res.sendStatus(204);
     });

@@ -1,18 +1,21 @@
 const express = require("express");
 const { AppointmentValidator } = require("../utils/appointment-validator");
+const { createAppointmentService } = require("../services/appointment-service");
 
 function createAppointmentsRouter(prisma, requireAuth) {
   const router = express.Router();
+  const appointmentService = createAppointmentService(prisma);
+
   router.use(requireAuth);
 
   function emitAgendaChanged(req, appointment, action) {
     const io = req.app.get("io");
-  
+
     if (!io) {
       console.error("Socket.IO não está configurado.");
       return;
     }
-  
+
     try {
       io.emit("agenda:changed", {
         action,
@@ -25,40 +28,20 @@ function createAppointmentsRouter(prisma, requireAuth) {
     }
   }
 
-  async function findConflict(data, excludeId = null) {
-    return prisma.appointment.findFirst({
-      where: {
-        professionalId: data.professionalId,
-        status: "SCHEDULED",
-        startAt: { lt: data.endAt },
-        endAt: { gt: data.startAt },
-        ...(excludeId !== null ? { id: { not: excludeId } } : {}),
-      },
-      select: { id: true },
-    });
-  }
+  function handleError(error, next, res) {
+    if (error.status) {
+      return res.status(error.status).json({
+        error: error.message,
+      });
+    }
 
-  async function findProfessional(professionalId) {
-    return prisma.professional.findUnique({
-      where: { id: professionalId },
-      select: { id: true },
-    });
-  }
-
-  function includeProfessional() {
-    return {
-      professional: {
-        select: { id: true, name: true },
-      },
-    };
+    next(error);
   }
 
   router.get("/professionals", async (req, res, next) => {
     try {
-      const professionals = await prisma.professional.findMany({
-        orderBy: { name: "asc" },
-        select: { id: true, name: true },
-      });
+      const professionals =
+        await appointmentService.findProfessionals();
 
       res.json(professionals);
     } catch (error) {
@@ -88,19 +71,11 @@ function createAppointmentsRouter(prisma, requireAuth) {
         });
       }
 
-      const { startOfDay, endOfDay } = dateResult.data;
-
-      const appointments = await prisma.appointment.findMany({
-        where: {
+      const appointments =
+        await appointmentService.findAppointments(
           professionalId,
-          startAt: {
-            gte: startOfDay,
-            lt: endOfDay,
-          },
-        },
-        orderBy: { startAt: "asc" },
-        include: includeProfessional(),
-      });
+          dateResult.data
+        );
 
       res.json(appointments);
     } catch (error) {
@@ -120,34 +95,14 @@ function createAppointmentsRouter(prisma, requireAuth) {
         });
       }
 
-      const professional = await findProfessional(
-        result.data.professionalId
+      const appointment = await appointmentService.create(
+        result.data
       );
-
-      if (!professional) {
-        return res.status(400).json({
-          error: "O profissional selecionado não existe.",
-        });
-      }
-
-      const conflict = await findConflict(result.data);
-
-      if (conflict) {
-        return res.status(409).json({
-          error:
-            "Esse profissional já possui um compromisso nesse horário.",
-        });
-      }
-
-      const appointment = await prisma.appointment.create({
-        data: result.data,
-        include: includeProfessional(),
-      });
 
       emitAgendaChanged(req, appointment, "created");
       res.status(201).json(appointment);
     } catch (error) {
-      next(error);
+      handleError(error, next, res);
     }
   });
 
@@ -161,22 +116,6 @@ function createAppointmentsRouter(prisma, requireAuth) {
         });
       }
 
-      const existing = await prisma.appointment.findUnique({
-        where: { id },
-      });
-
-      if (!existing) {
-        return res.status(404).json({
-          error: "Compromisso não encontrado.",
-        });
-      }
-
-      if (existing.status === "CANCELLED") {
-        return res.status(409).json({
-          error: "Não é possível editar um compromisso cancelado.",
-        });
-      }
-
       const result = AppointmentValidator.validateAppointment(
         req.body || {}
       );
@@ -187,35 +126,15 @@ function createAppointmentsRouter(prisma, requireAuth) {
         });
       }
 
-      const professional = await findProfessional(
-        result.data.professionalId
+      const appointment = await appointmentService.update(
+        id,
+        result.data
       );
-
-      if (!professional) {
-        return res.status(400).json({
-          error: "O profissional selecionado não existe.",
-        });
-      }
-
-      const conflict = await findConflict(result.data, id);
-
-      if (conflict) {
-        return res.status(409).json({
-          error:
-            "Esse profissional já possui um compromisso nesse horário.",
-        });
-      }
-
-      const appointment = await prisma.appointment.update({
-        where: { id },
-        data: result.data,
-        include: includeProfessional(),
-      });
 
       emitAgendaChanged(req, appointment, "updated");
       res.json(appointment);
     } catch (error) {
-      next(error);
+      handleError(error, next, res);
     }
   });
 
@@ -229,32 +148,12 @@ function createAppointmentsRouter(prisma, requireAuth) {
         });
       }
 
-      const existing = await prisma.appointment.findUnique({
-        where: { id },
-      });
-
-      if (!existing) {
-        return res.status(404).json({
-          error: "Compromisso não encontrado.",
-        });
-      }
-
-      if (existing.status === "CANCELLED") {
-        return res.status(409).json({
-          error: "Esse compromisso já está cancelado.",
-        });
-      }
-
-      const appointment = await prisma.appointment.update({
-        where: { id },
-        data: { status: "CANCELLED" },
-        include: includeProfessional(),
-      });
+      const appointment = await appointmentService.cancel(id);
 
       emitAgendaChanged(req, appointment, "cancelled");
       res.json(appointment);
     } catch (error) {
-      next(error);
+      handleError(error, next, res);
     }
   });
 

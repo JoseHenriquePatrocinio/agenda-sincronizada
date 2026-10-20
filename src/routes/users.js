@@ -1,29 +1,17 @@
 const express = require("express");
-const bcrypt = require("bcrypt");
 const { requireAdmin } = require("../middleware/requireAdmin");
 const { UserValidator } = require("../utils/user-validator");
-const { destroyUserSessions } = require("../utils/session-manager");
+const { createUserService } = require("../services/user-service");
 
 function createUsersRouter(prisma, redisClient) {
   const router = express.Router();
+  const userService = createUserService(prisma, redisClient);
 
   router.use(requireAdmin(prisma));
 
   router.get("/", async (req, res, next) => {
     try {
-      const users = await prisma.user.findMany({
-        select: {
-          id: true,
-          username: true,
-          role: true,
-          isActive: true,
-          createdAt: true,
-        },
-        orderBy: {
-          id: "asc",
-        },
-      });
-
+      const users = await userService.findAll();
       const currentUserId = Number(req.session.user.id);
 
       const usersWithCurrentUserFlag = users.map((user) => ({
@@ -67,32 +55,10 @@ function createUsersRouter(prisma, redisClient) {
         });
       }
 
-      const existingUser = await prisma.user.findUnique({
-        where: { username },
-        select: { id: true },
-      });
-
-      if (existingUser) {
-        return res.status(409).json({
-          error: "Este nome de usuário já está cadastrado.",
-        });
-      }
-
-      const passwordHash = await bcrypt.hash(password, 12);
-
-      const user = await prisma.user.create({
-        data: {
-          username,
-          passwordHash,
-          role,
-        },
-        select: {
-          id: true,
-          username: true,
-          role: true,
-          isActive: true,
-          createdAt: true,
-        },
+      const user = await userService.create({
+        username,
+        password,
+        role,
       });
 
       return res.status(201).json({
@@ -100,7 +66,7 @@ function createUsersRouter(prisma, redisClient) {
         user,
       });
     } catch (error) {
-      if (error.code === "P2002") {
+      if (error.code === "P2002" || error.status === 409) {
         return res.status(409).json({
           error: "Este nome de usuário já está cadastrado.",
         });
@@ -128,44 +94,19 @@ function createUsersRouter(prisma, redisClient) {
         });
       }
 
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          username: true,
-          isActive: true,
-        },
-      });
-
-      if (!user) {
-        return res.status(404).json({
-          error: "Usuário não encontrado.",
-        });
-      }
-
-      if (!user.isActive) {
-        return res.status(409).json({
-          error: "Este usuário já está desativado.",
-        });
-      }
-
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          isActive: false,
-        },
-      });
-
-      const destroyedSessions = await destroyUserSessions(
-        redisClient,
-        userId
-      );
+      const result = await userService.deactivate(userId);
 
       return res.json({
-        message: `Usuário "${user.username}" desativado com sucesso.`,
-        destroyedSessions,
+        message: `Usuário "${result.username}" desativado com sucesso.`,
+        destroyedSessions: result.destroyedSessions,
       });
     } catch (error) {
+      if (error.status) {
+        return res.status(error.status).json({
+          error: error.message,
+        });
+      }
+
       next(error);
     }
   });
