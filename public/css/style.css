@@ -224,6 +224,43 @@ select {
   color: #b42318;
 }
 
+.appointment-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+button.danger {
+  color: #ffffff;
+  background: #c93636;
+}
+
+button.danger:hover {
+  background: #a92727;
+  filter: none;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#formMessage {
+  margin: 0;
+  color: #b42318;
+}
+
+@media (max-width: 600px) {
+  .appointment-actions {
+    width: 100%;
+  }
+
+  .appointment-actions button {
+    flex: 1;
+  }
+}
+
 @media (max-width: 600px) {
   .appointment > div:last-child {
     text-align: left;
