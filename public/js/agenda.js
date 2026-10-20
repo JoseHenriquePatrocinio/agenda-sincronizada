@@ -223,7 +223,7 @@ async function loadProfessionals() {
   }
 }
 
-async function loadAppointments() {
+async function loadAppointments({ preserveList = false } = {}) {
   const professionalId = professionalSelect.value;
   const date = dateInput.value;
 
@@ -234,8 +234,11 @@ async function loadAppointments() {
   }
 
   loadButton.disabled = true;
-  message.textContent = "Carregando agenda...";
-  appointmentsContainer.replaceChildren();
+
+  if (!preserveList) {
+    message.textContent = "Carregando agenda...";
+    appointmentsContainer.replaceChildren();
+  }
 
   try {
     const params = new URLSearchParams({ professionalId, date });
@@ -341,5 +344,5 @@ socket.on("connect_error", (error) => {
 });
 
 socket.on("agenda:changed", () => {
-  loadAppointments();
+  loadAppointments({ preserveList: true });
 });
