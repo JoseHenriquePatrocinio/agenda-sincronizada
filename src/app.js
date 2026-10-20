@@ -20,7 +20,7 @@ function createApp(redisClient) {
 
   const sessionStore = new RedisStore({
     client: redisClient,
-    prefix: "agenda:sess:",
+    prefix: process.env.SESSION_PREFIX,
     ttl: 8 * 60 * 60
   });
 
@@ -47,13 +47,13 @@ function createApp(redisClient) {
 
   app.use("/api/auth", createAuthRouter(prisma));
 
-  app.use("/api/users", createUsersRouter(prisma));
+  app.use("/api/users", createUsersRouter(prisma, redisClient));
 
-  app.get("/api/health", requireAuth, (_req, res) => res.json({ status: "ok" }));
+  app.get("/api/health", requireAuth(prisma), (_req, res) => res.json({ status: "ok" }));
 
-  app.use("/api", createAppointmentsRouter(prisma, requireAuth));
+  app.use("/api", createAppointmentsRouter(prisma, requireAuth(prisma)));
   
-  app.get("/", requireAuth, (_req, res) => {
+  app.get("/", requireAuth(prisma), (_req, res) => {
     res.sendFile(
       path.join(__dirname, "..", "public", "agenda.html")
     );
