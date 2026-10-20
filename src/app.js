@@ -53,7 +53,7 @@ function createApp(redisClient) {
 
   app.use("/api", createAppointmentsRouter(prisma, requireAuth));
   
-  app.get("/agenda.html", requireAuth, (_req, res) => {
+  app.get("/", requireAuth, (_req, res) => {
     res.sendFile(
       path.join(__dirname, "..", "public", "agenda.html")
     );
