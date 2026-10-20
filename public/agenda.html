@@ -39,15 +39,95 @@
     </section>
 
     <section class="card">
+      <div class="section-heading">
+        <h2>Agendamentos</h2>
+        <button id="newButton" type="button" class="secondary">
+          Novo agendamento
+        </button>
+      </div>
+
       <p id="message" class="muted">
         Carregue a agenda para começar.
       </p>
 
       <div id="appointments" class="appointments"></div>
     </section>
-  </main>
+   
+    <dialog id="appointmentDialog">
+      <form id="appointmentForm">
+        <h2 id="dialogTitle">Novo compromisso</h2>
 
-  <script src="/js/agenda.js"></script>
-  <script src="/js/agenda-auth.js"></script>
+        <label for="patientName">
+          Paciente
+          <input
+            id="patientName"
+            name="patientName"
+            maxlength="150"
+            required
+          >
+        </label>
+
+        <label for="title">
+          Descrição
+          <input
+            id="title"
+            name="title"
+            value="Consulta"
+            maxlength="150"
+            required
+          >
+        </label>
+
+        <label for="appointmentProfessionalId">
+          Profissional
+          <select
+            id="appointmentProfessionalId"
+            name="professionalId"
+            required
+          ></select>
+        </label>
+
+        <label for="startAt">
+          Início
+          <input
+            id="startAt"
+            name="startAt"
+            type="datetime-local"
+            required
+          >
+        </label>
+
+        <label for="endAt">
+          Fim
+          <input
+            id="endAt"
+            name="endAt"
+            type="datetime-local"
+            required
+          >
+        </label>
+
+        <p id="formMessage" class="muted" role="alert"></p>
+
+        <div class="actions">
+          <button
+            type="button"
+            id="closeDialog"
+            class="secondary"
+          >
+            Voltar
+          </button>
+
+          <button type="submit" id="saveButton">
+            Salvar
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+  </main>
+  <script src="/js/utils/agenda-utils.js" defer></script>
+  <script src="/js/agenda.js" defer></script>
+  <script src="/js/agenda-auth.js" defer></script>
 </body>
 </html>
