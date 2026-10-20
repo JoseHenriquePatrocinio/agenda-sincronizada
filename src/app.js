@@ -26,7 +26,7 @@ function createApp(redisClient) {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 
-  app.use(session({
+  const sessionMiddleware = session({
     name: "agenda.sid",
     store: sessionStore,
     secret: process.env.SESSION_SECRET,
@@ -37,8 +37,12 @@ function createApp(redisClient) {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       maxAge: 8 * 60 * 60 * 1000
-    }
-  }));
+    },
+  });
+
+  app.use(sessionMiddleware);
+
+  app.set("sessionMiddleware", sessionMiddleware);
 
   app.use("/api/auth", createAuthRouter(prisma));
 

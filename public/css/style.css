@@ -251,6 +251,37 @@ button:disabled {
   color: #b42318;
 }
 
+.toolbar.card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 240px) auto;
+  align-items: end;
+  gap: 16px;
+}
+
+.toolbar.card label {
+  min-width: 0;
+}
+
+.toolbar.card select,
+.toolbar.card input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#loadButton {
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .toolbar.card {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar.card #loadButton {
+    width: 100%;
+  }
+}
+
 @media (max-width: 600px) {
   .appointment-actions {
     width: 100%;

@@ -5,6 +5,26 @@ function createAppointmentsRouter(prisma, requireAuth) {
   const router = express.Router();
   router.use(requireAuth);
 
+  function emitAgendaChanged(req, appointment, action) {
+    const io = req.app.get("io");
+  
+    if (!io) {
+      console.error("Socket.IO não está configurado.");
+      return;
+    }
+  
+    try {
+      io.emit("agenda:changed", {
+        action,
+        appointmentId: appointment.id,
+        professionalId: appointment.professionalId,
+        startAt: appointment.startAt,
+      });
+    } catch (error) {
+      console.error("Erro ao emitir atualização da agenda:", error);
+    }
+  }
+
   async function findConflict(data, excludeId = null) {
     return prisma.appointment.findFirst({
       where: {
@@ -124,6 +144,7 @@ function createAppointmentsRouter(prisma, requireAuth) {
         include: includeProfessional(),
       });
 
+      emitAgendaChanged(req, appointment, "created");
       res.status(201).json(appointment);
     } catch (error) {
       next(error);
@@ -191,6 +212,7 @@ function createAppointmentsRouter(prisma, requireAuth) {
         include: includeProfessional(),
       });
 
+      emitAgendaChanged(req, appointment, "updated");
       res.json(appointment);
     } catch (error) {
       next(error);
@@ -229,6 +251,7 @@ function createAppointmentsRouter(prisma, requireAuth) {
         include: includeProfessional(),
       });
 
+      emitAgendaChanged(req, appointment, "cancelled");
       res.json(appointment);
     } catch (error) {
       next(error);
