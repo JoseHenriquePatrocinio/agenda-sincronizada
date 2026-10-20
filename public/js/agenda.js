@@ -1,106 +1,184 @@
 const professionalSelect = document.querySelector("#professionalId");
-
 const dateInput = document.querySelector("#date");
 const loadButton = document.querySelector("#loadButton");
 const appointmentsContainer = document.querySelector("#appointments");
-
 const message = document.querySelector("#message");
+const newButton = document.querySelector("#newButton");
+const appointmentDialog = document.querySelector("#appointmentDialog");
+const appointmentForm = document.querySelector("#appointmentForm");
+const appointmentProfessionalSelect = document.querySelector("#appointmentProfessionalId");
+const dialogTitle = document.querySelector("#dialogTitle");
+const formMessage = document.querySelector("#formMessage");
+const saveButton = document.querySelector("#saveButton");
+const closeDialog = document.querySelector("#closeDialog");
 
-function getLocalDate() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
+let professionals = [];
 
-  return `${year}-${month}-${day}`;
-}
-
-function formatTime(value) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "America/Sao_Paulo",
-  }).format(new Date(value));
-}
-
-function formatDate(value) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "full",
-    timeZone: "America/Sao_Paulo",
-  }).format(new Date(`${value}T12:00:00-03:00`));
-}
-
-async function apiGet(url) {
-  const response = await fetch(url, {
-    method: "GET",
+async function apiRequest(url, method = "GET", body = null) {
+  const options = {
+    method,
     credentials: "same-origin",
-    headers: {
-      Accept: "application/json",
-    },
-  });
+    headers: { Accept: "application/json" },
+  };
+
+  if (body !== null) {
+    options.headers["Content-Type"] = "application/json";
+    options.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(url, options);
 
   if (response.status === 401 || response.status === 403) {
     window.location.replace("/login.html");
     throw new Error("Sessão inválida ou expirada.");
   }
 
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(data.error || "Erro ao consultar o servidor.");
+    throw new Error(
+      data.error || "Não foi possível concluir a operação."
+    );
   }
 
   return data;
 }
 
+function fillProfessionalOptions(selectedId = "") {
+  appointmentProfessionalSelect.replaceChildren();
+
+  for (const professional of professionals) {
+    const option = document.createElement("option");
+    option.value = String(professional.id);
+    option.textContent = professional.name;
+    appointmentProfessionalSelect.append(option);
+  }
+
+  if (selectedId) {
+    appointmentProfessionalSelect.value = String(selectedId);
+  }
+}
+
+function openCreateDialog() {
+  appointmentForm.reset();
+  delete appointmentForm.dataset.appointmentId;
+
+  dialogTitle.textContent = "Novo agendamento";
+  formMessage.textContent = "";
+  saveButton.textContent = "Salvar";
+
+  fillProfessionalOptions(professionalSelect.value);
+  appointmentDialog.showModal();
+}
+
+function openEditDialog(appointment) {
+  appointmentForm.reset();
+  appointmentForm.dataset.appointmentId = String(appointment.id);
+
+  dialogTitle.textContent = "Editar agendamento";
+  formMessage.textContent = "";
+  saveButton.textContent = "Salvar alterações";
+
+  fillProfessionalOptions(appointment.professionalId);
+
+  appointmentForm.elements.patientName.value = appointment.patientName;
+  appointmentForm.elements.title.value = appointment.title;
+  appointmentForm.elements.startAt.value = AgendaUtils.toDateTimeLocal(appointment.startAt);
+  appointmentForm.elements.endAt.value = AgendaUtils.toDateTimeLocal(appointment.endAt);
+
+  appointmentDialog.showModal();
+}
+
 function renderAppointments(appointments) {
   appointmentsContainer.replaceChildren();
 
+  const formattedDate = AgendaUtils.formatDate(dateInput.value);
+
   if (appointments.length === 0) {
-    message.textContent =
-      "Nenhum compromisso encontrado para esta data.";
+    message.textContent = `Nenhum compromisso encontrado para ${formattedDate}.`;
     return;
   }
 
-  message.textContent = `${appointments.length} compromisso(s) encontrado(s).`;
+  message.textContent = `${appointments.length} compromisso(s) encontrado(s) para ${formattedDate}.`;
 
   for (const appointment of appointments) {
     const card = document.createElement("article");
     card.className = "appointment";
 
-    if (appointment.status === "CANCELLED") {
+    const isCancelled = appointment.status === "CANCELLED";
+
+    if (isCancelled) {
       card.classList.add("cancelled");
     }
 
     const details = document.createElement("div");
 
-    const title = document.createElement("h3");
-    title.textContent = appointment.patientName;
+    const patient = document.createElement("h3");
+    patient.textContent = appointment.patientName;
 
     const description = document.createElement("p");
     description.textContent = appointment.title;
 
     const professional = document.createElement("p");
-    professional.textContent =
-      appointment.professional.name;
+    professional.textContent = appointment.professional.name;
 
-    details.append(title, description, professional);
+    details.append(patient, description, professional);
 
     const schedule = document.createElement("div");
 
     const time = document.createElement("strong");
     time.textContent =
-      `${formatTime(appointment.startAt)} – ` +
-      `${formatTime(appointment.endAt)}`;
+      `${AgendaUtils.formatTime(appointment.startAt)} – ` +
+      `${AgendaUtils.formatTime(appointment.endAt)}`;
 
     const status = document.createElement("p");
-    status.textContent =
-      appointment.status === "CANCELLED"
-        ? "Cancelado"
-        : "Agendado";
+    status.textContent = isCancelled ? "Cancelado" : "Agendado";
 
     schedule.append(time, status);
     card.append(details, schedule);
+
+    if (!isCancelled) {
+      const actions = document.createElement("div");
+      actions.className = "appointment-actions";
+
+      const editButton = document.createElement("button");
+      editButton.type = "button";
+      editButton.className = "secondary";
+      editButton.textContent = "Editar";
+      editButton.addEventListener("click", () => {
+        openEditDialog(appointment);
+      });
+
+      const cancelButton = document.createElement("button");
+      cancelButton.type = "button";
+      cancelButton.className = "danger";
+      cancelButton.textContent = "Cancelar";
+
+      cancelButton.addEventListener("click", async () => {
+        const confirmed = window.confirm(
+          `Deseja cancelar o agendamento de ${appointment.patientName}?`
+        );
+
+        if (!confirmed) return;
+
+        cancelButton.disabled = true;
+
+        try {
+          await apiRequest(
+            `/api/appointments/${appointment.id}/cancel`,
+            "PATCH"
+          );
+
+          await loadAppointments();
+        } catch (error) {
+          message.textContent = error.message;
+          cancelButton.disabled = false;
+        }
+      });
+
+      actions.append(editButton, cancelButton);
+      card.append(actions);
+    }
 
     appointmentsContainer.append(card);
   }
@@ -108,37 +186,39 @@ function renderAppointments(appointments) {
 
 async function loadProfessionals() {
   professionalSelect.disabled = true;
+  newButton.disabled = true;
 
-  const professionals = await apiGet("/api/professionals");
+  try {
+    professionals = await apiRequest("/api/professionals");
+    professionalSelect.replaceChildren();
 
-  professionalSelect.replaceChildren();
+    for (const professional of professionals) {
+      const option = document.createElement("option");
+      option.value = String(professional.id);
+      option.textContent = professional.name;
+      professionalSelect.append(option);
+    }
 
-  for (const professional of professionals) {
-    const option = document.createElement("option");
+    fillProfessionalOptions();
 
-    option.value = String(professional.id);
-    option.textContent = professional.name;
+    if (professionals.length === 0) {
+      message.textContent = "Nenhum profissional cadastrado.";
+      loadButton.disabled = true;
+      return;
+    }
 
-    professionalSelect.append(option);
+    const defaultProfessional =
+      professionals.find((professional) => professional.id === 1) ||
+      professionals[0];
+
+    professionalSelect.value = String(defaultProfessional.id);
+    appointmentProfessionalSelect.value = String(defaultProfessional.id);
+
+    await loadAppointments();
+  } finally {
+    professionalSelect.disabled = false;
+    newButton.disabled = professionals.length === 0;
   }
-
-  professionalSelect.disabled = false;
-
-  if (professionals.length === 0) {
-    message.textContent = "Nenhum profissional cadastrado.";
-    loadButton.disabled = true;
-    return;
-  }
-
-  const firstProfessional = professionals.find(
-    (professional) => professional.id === 1
-  );
-
-  if (firstProfessional) {
-    professionalSelect.value = "1";
-  }
-
-  await loadAppointments();
 }
 
 async function loadAppointments() {
@@ -147,6 +227,7 @@ async function loadAppointments() {
 
   if (!professionalId || !date) {
     message.textContent = "Selecione um profissional e uma data.";
+    appointmentsContainer.replaceChildren();
     return;
   }
 
@@ -155,12 +236,8 @@ async function loadAppointments() {
   appointmentsContainer.replaceChildren();
 
   try {
-    const params = new URLSearchParams({
-      professionalId,
-      date,
-    });
-
-    const appointments = await apiGet(
+    const params = new URLSearchParams({ professionalId, date });
+    const appointments = await apiRequest(
       `/api/appointments?${params.toString()}`
     );
 
@@ -173,15 +250,68 @@ async function loadAppointments() {
 }
 
 loadButton.addEventListener("click", loadAppointments);
-
-professionalSelect.addEventListener(
-  "change",
-  loadAppointments
-);
-
+professionalSelect.addEventListener("change", loadAppointments);
 dateInput.addEventListener("change", loadAppointments);
+newButton.addEventListener("click", openCreateDialog);
 
-dateInput.value = getLocalDate();
+closeDialog.addEventListener("click", () => {
+  appointmentDialog.close();
+});
+
+appointmentDialog.addEventListener("close", () => {
+  appointmentForm.reset();
+  delete appointmentForm.dataset.appointmentId;
+  formMessage.textContent = "";
+});
+
+appointmentForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  if (!appointmentForm.reportValidity()) {
+    return;
+  }
+
+  const appointmentId = appointmentForm.dataset.appointmentId;
+
+  const result = AgendaUtils.validateAppointmentForm({
+    professionalId: appointmentProfessionalSelect.value,
+    patientName: appointmentForm.elements.patientName.value,
+    title: appointmentForm.elements.title.value,
+    startAt: appointmentForm.elements.startAt.value,
+    endAt: appointmentForm.elements.endAt.value,
+  });
+
+  if (result.error) {
+    formMessage.textContent = result.error;
+    return;
+  }
+
+  saveButton.disabled = true;
+  formMessage.textContent = "Salvando...";
+
+  try {
+    await apiRequest(
+      appointmentId
+        ? `/api/appointments/${appointmentId}`
+        : "/api/appointments",
+      appointmentId ? "PUT" : "POST",
+      result.data
+    );
+
+    appointmentDialog.close();
+
+    professionalSelect.value = String(result.data.professionalId);
+    dateInput.value = result.selectedDate;
+
+    await loadAppointments();
+  } catch (error) {
+    formMessage.textContent = error.message;
+  } finally {
+    saveButton.disabled = false;
+  }
+});
+
+dateInput.value = AgendaUtils.getLocalDate();
 
 loadProfessionals().catch((error) => {
   message.textContent = error.message;
