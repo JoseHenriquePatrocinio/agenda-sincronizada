@@ -7,6 +7,7 @@ const { PrismaPg } = require("@prisma/adapter-pg");
 const { createAuthRouter } = require("./routes/auth");
 const { requireAuth } = require("./middleware/auth");
 const { createAppointmentsRouter } = require("./routes/appointments");
+const { createUsersRouter } = require("./routes/users");
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL
@@ -45,6 +46,8 @@ function createApp(redisClient) {
   app.set("sessionMiddleware", sessionMiddleware);
 
   app.use("/api/auth", createAuthRouter(prisma));
+
+  app.use("/api/users", createUsersRouter(prisma));
 
   app.get("/api/health", requireAuth, (_req, res) => res.json({ status: "ok" }));
 
