@@ -52,3 +52,20 @@ Acesse `http://localhost:3000`.
 
 - Usuário: `admin`
 - Senha: `admin123`
+
+## Decisões técnicas
+
+1. **Monólito primeiro:** abordagem inspirada nos princípios defendidos por Martin Fowler, priorizando uma aplicação única e centralizada para reduzir a complexidade inicial.
+2. **Sem framework frontend:** reduzir a complexidade e evitar abstrações e arquivos desnecessários.
+3. **WebSocket:** comunicação bidirecional para atualizações em tempo real, sem depender de polling constante.
+4. **Dockerização dos bancos de dados:** padronizar o ambiente de desenvolvimento e aproximá-lo da infraestrutura utilizada em produção.
+5. **Node.js:** escolhido pela versatilidade no desenvolvimento web e pelo ecossistema de bibliotecas para comunicação em tempo real.
+6. **Prisma:** ORM que simplifica o acesso ao banco de dados e a implementação de operações CRUD.
+7. **PostgreSQL:** banco de dados relacional robusto, confiável e bem documentado.
+8. **Redis:** banco de dados em memória utilizado para armazenar sessões, oferecendo acesso rápido aos dados.
+9. **Arquitetura em camadas (N-tier):** separação de responsabilidades para facilitar a manutenção, a organização e a evolução do sistema.
+
+## Próximos passos
+
+1. **Adicionar Nginx:** atuar como proxy reverso e preparar a aplicação para uma implantação mais estruturada.
+2. **Implementar a camada de serviços (Services):** separar as regras de negócio das rotas, melhorando a organização e a reutilização do código.
