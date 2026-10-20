@@ -1,0 +1,121 @@
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Administração de usuários</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <div>
+        <p class="eyebrow">agenda-sincronizada</p>
+        <h1>Administração</h1>
+        <p class="muted">Gerencie os usuários do sistema.</p>
+      </div>
+
+      <div class="toolbar">
+        <button type="button" id="agendaButton" class="secondary">
+          Voltar à agenda
+        </button>
+        <button type="button" id="logoutButton" class="secondary">
+          Sair
+        </button>
+      </div>
+    </header>
+
+    <div class="admin-layout">
+      <section class="card">
+        <h2>Novo usuário</h2>
+        <p class="muted">
+          Cadastre uma conta para acessar o sistema.
+        </p>
+
+        <form id="userForm" class="admin-form">
+          <label for="username">
+            Nome de usuário
+            <input
+              id="username"
+              name="username"
+              minlength="3"
+              maxlength="50"
+              pattern="[a-zA-Z0-9_.-]{3,50}"
+              autocomplete="off"
+              required
+            >
+          </label>
+
+          <label for="password">
+            Senha
+            <input
+              id="password"
+              name="password"
+              type="password"
+              minlength="8"
+              maxlength="72"
+              autocomplete="new-password"
+              required
+            >
+          </label>
+
+          <label for="role">
+            Perfil de acesso
+            <select id="role" name="role" required>
+              <option value="USER">Usuário comum</option>
+              <option value="ADMIN">Administrador</option>
+            </select>
+          </label>
+
+          <p id="formMessage" class="muted" role="status"
+             aria-live="polite"></p>
+
+          <button type="submit" id="saveButton">
+            Cadastrar usuário
+          </button>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="admin-toolbar">
+          <div>
+            <h2>Usuários cadastrados</h2>
+            <p id="listMessage" class="muted">
+              Carregando usuários...
+            </p>
+          </div>
+
+          <button type="button" id="refreshButton" class="secondary">
+            Atualizar
+          </button>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuário</th>
+                <th>Perfil</th>
+                <th>Situação</th>
+                <th>Criado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr>
+                <td colspan="6">Carregando...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/js/admin.js" defer></script>
+  <script src="/js/utils/agenda-utils.js" defer></script>
+  <script src="/js/agenda-auth.js" defer></script>
+</body>
+</html>

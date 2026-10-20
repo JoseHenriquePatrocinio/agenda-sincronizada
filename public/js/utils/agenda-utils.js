@@ -58,6 +58,19 @@ class AgendaUtils {
         year: "numeric",
       }).format(date);
     }
+
+    static formatDateShort(value) {
+      if (!value) return "-";
+    
+      const date = new Date(value);
+    
+      if (Number.isNaN(date.getTime())) return "-";
+    
+      return new Intl.DateTimeFormat("pt-BR", {
+        dateStyle: "short",
+        timeStyle: "short",
+      }).format(date);
+    }
   
     static toDateTimeLocal(value) {
       const { year, month, day, hour, minute } =
