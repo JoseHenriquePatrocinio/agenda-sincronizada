@@ -16,6 +16,10 @@ function createAuthRouter(prisma) {
         return res.status(401).json({ error: "Credenciais inválidas" });
       }
 
+      if (!user.isActive) {
+        return res.status(403).json({error: "Esta conta está desativada.",});
+      }
+
       req.session.regenerate((error) => {
         if (error) {
           return next(error);
@@ -24,6 +28,7 @@ function createAuthRouter(prisma) {
         req.session.user = {
           id: user.id,
           username: user.username,
+          role: user.role,
         };
 
         req.session.save((error) => {
