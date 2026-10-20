@@ -11,7 +11,9 @@ const dialogTitle = document.querySelector("#dialogTitle");
 const formMessage = document.querySelector("#formMessage");
 const saveButton = document.querySelector("#saveButton");
 const closeDialog = document.querySelector("#closeDialog");
+const connectionStatus = document.querySelector("#connection");
 
+const socket = io();
 let professionals = [];
 
 async function apiRequest(url, method = "GET", body = null) {
@@ -315,4 +317,29 @@ dateInput.value = AgendaUtils.getLocalDate();
 
 loadProfessionals().catch((error) => {
   message.textContent = error.message;
+});
+
+socket.on("connect", () => {
+  if (connectionStatus) {
+    connectionStatus.textContent = "Conectado em tempo real";
+  }
+});
+
+socket.on("disconnect", () => {
+  if (connectionStatus) {
+    connectionStatus.textContent = "Reconectando...";
+  }
+});
+
+socket.on("connect_error", (error) => {
+  if (connectionStatus) {
+    connectionStatus.textContent =
+      error.message === "Não autenticado."
+        ? "Sessão inválida"
+        : "Conexão indisponível";
+  }
+});
+
+socket.on("agenda:changed", () => {
+  loadAppointments();
 });
