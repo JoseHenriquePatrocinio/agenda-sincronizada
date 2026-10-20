@@ -2,11 +2,12 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const { requireAdmin } = require("../middleware/requireAdmin");
 const { UserValidator } = require("../utils/user-validator");
+const { destroyUserSessions } = require("../utils/session-manager");
 
-function createUsersRouter(prisma) {
+function createUsersRouter(prisma, redisClient) {
   const router = express.Router();
 
-  router.use(requireAdmin);
+  router.use(requireAdmin(prisma));
 
   router.get("/", async (req, res, next) => {
     try {
@@ -155,8 +156,14 @@ function createUsersRouter(prisma) {
         },
       });
 
+      const destroyedSessions = await destroyUserSessions(
+        redisClient,
+        userId
+      );
+
       return res.json({
         message: `Usuário "${user.username}" desativado com sucesso.`,
+        destroyedSessions,
       });
     } catch (error) {
       next(error);
