@@ -22,7 +22,8 @@ function createApp(redisClient) {
   const sessionStore = new RedisStore({
     client: redisClient,
     prefix: process.env.SESSION_PREFIX,
-    ttl: 8 * 60 * 60
+    ttl: process.env.SESSION_IDLE_TIMEOUT,
+    disableTouch: false,
   });
 
   app.use(express.json());
@@ -34,11 +35,12 @@ function createApp(redisClient) {
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    rolling: true,
     cookie: {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
-      maxAge: 8 * 60 * 60 * 1000
+      maxAge: process.env.SESSION_IDLE_TIMEOUT * 1000,
     },
   });
 
