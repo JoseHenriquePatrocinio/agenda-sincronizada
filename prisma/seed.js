@@ -17,23 +17,43 @@ function dateAt(dayOffset, time) {
 async function main() {
   const passwordHash = await bcrypt.hash("admin123", 12);
   const passwordHash2 = await bcrypt.hash("user123", 12);
+  const passwordHash3 = await bcrypt.hash("123456789", 12);
 
   await prisma.user.upsert({
     where: { username: "admin" },
-    update: { role: "ADMIN" },
+    update: {
+      role: "ADMIN",
+      isActive: true,
+    },
     create: {
       username: "admin",
       passwordHash,
       role: "ADMIN",
+      isActive: true,
     },
   });
 
   await prisma.user.upsert({
     where: { username: "user" },
-    update: {},
+    update: {
+      isActive: true,
+    },
     create: {
       username: "user",
       passwordHash: passwordHash2,
+      isActive: true,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { username: "Usuario.Sus" },
+    update: {
+      isActive: true,
+    },
+    create: {
+      username: "Usuario.Sus",
+      passwordHash: passwordHash3,
+      isActive: true,
     },
   });
 
