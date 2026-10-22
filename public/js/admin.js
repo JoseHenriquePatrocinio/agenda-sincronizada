@@ -252,3 +252,4 @@ agendaButton.addEventListener("click", () => {
 });
 
 loadUsers();
+IdleTimeout.init();

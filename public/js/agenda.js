@@ -376,3 +376,5 @@ socket.on("connect_error", (error) => {
 socket.on("agenda:changed", () => {
   loadAppointments({ preserveList: true });
 });
+
+IdleTimeout.init();
