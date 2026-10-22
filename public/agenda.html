@@ -62,9 +62,9 @@
           <input
             id="patientName"
             name="patientName"
-            maxlength="150"
             required
           >
+          <small id="patientNameError" class="error-message"></small>
         </label>
 
         <label for="title">
@@ -73,9 +73,9 @@
             id="title"
             name="title"
             value="Consulta"
-            maxlength="150"
             required
           >
+          <small id="titleError" class="error-message"></small>
         </label>
 
         <label for="appointmentProfessionalId">
@@ -127,6 +127,8 @@
 
   </main>
   <script src="/socket.io/socket.io.js" defer></script>
+  <script src="/js/socket-client.js" defer></script>
+  <script src="/js/session-guard.js" defer></script>
   <script src="/js/utils/agenda-utils.js" defer></script>
   <script src="/js/agenda.js" defer></script>
   <script src="/js/agenda-auth.js" defer></script>

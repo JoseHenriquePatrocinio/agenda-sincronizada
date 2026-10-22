@@ -96,6 +96,12 @@ function createUsersRouter(prisma, redisClient) {
 
       const result = await userService.deactivate(userId);
 
+      const io = req.app.get("io");
+
+      io?.to(`user:${userId}`).emit("user:deactivated", {
+        message: "Sua conta foi desativada.",
+      });
+
       return res.json({
         message: `Usuário "${result.username}" desativado com sucesso.`,
         destroyedSessions: result.destroyedSessions,

@@ -1,6 +1,8 @@
 const userForm = document.getElementById("userForm");
 const usernameInput = document.getElementById("username");
+const usernameError = document.getElementById("usernameError");
 const passwordInput = document.getElementById("password");
+const passwordError = document.getElementById("passwordError");
 const roleInput = document.getElementById("role");
 
 const formMessage = document.getElementById("formMessage");
@@ -208,6 +210,38 @@ userForm.addEventListener("submit", async (event) => {
     showFormMessage(error.message, true);
   } finally {
     saveButton.disabled = false;
+  }
+});
+
+passwordInput.addEventListener("input", () => {
+  if (passwordInput.value.length > 72) {
+    passwordError.textContent =
+      "A senha deve ter no máximo 72 caracteres.";
+  } else if (
+    passwordInput.value.length > 0 &&
+    passwordInput.value.length < 8
+  ) {
+    passwordError.textContent =
+      "A senha deve ter pelo menos 8 caracteres.";
+  } else {
+    passwordError.textContent = "";
+  }
+});
+
+usernameInput.addEventListener("input", () => {
+  const username = usernameInput.value;
+
+  if (username.length > 50) {
+    usernameError.textContent =
+      "O usuário deve ter no máximo 50 caracteres.";
+  } else if (username.length > 0 && username.length < 3) {
+    usernameError.textContent =
+      "O usuário deve ter pelo menos 3 caracteres.";
+  } else if (!/^[a-zA-Z0-9_.-]*$/.test(username)) {
+    usernameError.textContent =
+      "Use apenas letras, números, ponto, hífen ou sublinhado.";
+  } else {
+    usernameError.textContent = "";
   }
 });
 
