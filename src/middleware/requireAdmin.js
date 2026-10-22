@@ -8,9 +8,7 @@ function requireAdmin(prisma) {
       }
 
       const user = await prisma.user.findUnique({
-        where: {
-          id: Number(req.session.user.id),
-        },
+        where: { id: Number(req.session.user.id) },
         select: {
           id: true,
           role: true,
@@ -19,16 +17,8 @@ function requireAdmin(prisma) {
       });
 
       if (!user || !user.isActive) {
-        return req.session.destroy((error) => {
-          if (error) {
-            return next(error);
-          }
-
-          res.clearCookie("agenda.sid");
-
-          return res.status(401).json({
-            error: "Conta desativada ou inexistente.",
-          });
+        return res.status(401).json({
+          error: "Usuário não autenticado ou inativo.",
         });
       }
 
@@ -37,6 +27,8 @@ function requireAdmin(prisma) {
           error: "Acesso restrito a administradores.",
         });
       }
+
+      req.session.user.role = user.role;
 
       next();
     } catch (error) {
