@@ -12,6 +12,10 @@ const formMessage = document.querySelector("#formMessage");
 const saveButton = document.querySelector("#saveButton");
 const closeDialog = document.querySelector("#closeDialog");
 const connectionStatus = document.querySelector("#connection");
+const patientNameInput = document.getElementById("patientName");
+const patientNameError = document.getElementById("patientNameError");
+const titleInput = document.getElementById("title");
+const titleError = document.getElementById("titleError");
 
 const socket = window.socket;
 let professionals = [];
@@ -253,6 +257,32 @@ async function loadAppointments({ preserveList = false } = {}) {
     loadButton.disabled = false;
   }
 }
+
+patientNameInput.addEventListener("input", () => {
+  const patientName = patientNameInput.value;
+
+  if (patientName.trim().length === 0) {
+    patientNameError.textContent = "Informe o nome do paciente.";
+  } else if (patientName.length > 150) {
+    patientNameError.textContent =
+      "O nome do paciente deve ter no máximo 150 caracteres.";
+  } else {
+    patientNameError.textContent = "";
+  }
+});
+
+titleInput.addEventListener("input", () => {
+  const title = titleInput.value;
+
+  if (title.trim().length === 0) {
+    titleError.textContent = "Informe uma descrição.";
+  } else if (title.length > 150) {
+    titleError.textContent =
+      "A descrição deve ter no máximo 150 caracteres.";
+  } else {
+    titleError.textContent = "";
+  }
+});
 
 loadButton.addEventListener("click", loadAppointments);
 professionalSelect.addEventListener("change", loadAppointments);
