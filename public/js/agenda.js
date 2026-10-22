@@ -13,7 +13,7 @@ const saveButton = document.querySelector("#saveButton");
 const closeDialog = document.querySelector("#closeDialog");
 const connectionStatus = document.querySelector("#connection");
 
-const socket = io();
+const socket = window.socket;
 let professionals = [];
 
 async function apiRequest(url, method = "GET", body = null) {
