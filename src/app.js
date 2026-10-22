@@ -8,6 +8,7 @@ const { createAuthRouter } = require("./routes/auth");
 const { requireAuth } = require("./middleware/auth");
 const { createAppointmentsRouter } = require("./routes/appointments");
 const { createUsersRouter } = require("./routes/users");
+const { requireAdmin } = require("./middleware/requireAdmin");
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL
@@ -58,6 +59,16 @@ function createApp(redisClient) {
       path.join(__dirname, "..", "public", "agenda.html")
     );
   });
+
+  app.get(
+    "/admin.html",
+    requireAdmin(prisma),
+    (_req, res) => {
+      res.sendFile(
+        path.join(__dirname, "..", "public", "admin.html")
+      );
+    }
+  );
 
   app.use(express.static(path.join(__dirname, "..", "public")));
 
