@@ -68,5 +68,3 @@ Acesse `http://localhost:3000`.
 ## Próximos passos
 
 1. **Adicionar Nginx:** configurar um proxy reverso e preparar a aplicação para uma implantação mais estruturada.
-2. ~~**Implementar a camada de serviços (Services):** separar as regras de negócio das rotas, melhorando a organização e a reutilização do código.~~
-3. **Adicionar testes automatizados:** validar as regras de negócio, as rotas e os principais fluxos da aplicação.
