@@ -18,15 +18,29 @@ async function startServer() {
     io.engine.use(app.get("sessionMiddleware"));
 
     io.use((socket, next) => {
-      if (!socket.request.session?.user) {
+      const user = socket.request.session?.user;
+
+      if (!user) {
         return next(new Error("Não autenticado."));
       }
-  
+
+      socket.data.userId = Number(user.id);
+
       next();
-    });  
+    });
 
     io.on("connection", (socket) => {
-      console.log("Cliente conectado ao Socket.IO:", socket.id);
+      const userId = socket.data.userId;
+
+      socket.join(`user:${userId}`);
+
+      console.log(`Cliente conectado ao Socket.IO: ${socket.id}`);
+
+      socket.on("disconnect", () => {
+        console.log(
+          `Cliente desconectado do Socket.IO: ${socket.id}`
+        );
+      });
     });
 
     server.listen(port, () => {
