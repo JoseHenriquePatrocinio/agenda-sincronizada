@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 async function destroyUserSessions(redisClient, userId) {
   let destroyedCount = 0;
 
